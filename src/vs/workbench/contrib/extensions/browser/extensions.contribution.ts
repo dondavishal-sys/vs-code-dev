@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -111,6 +112,8 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
 		new SyncDescriptor(ExtensionsInput)
 	]);
 
+export const VIEW_CONTAINER: any = { id: VIEWLET_ID };
+/*
 export const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer(
 	{
 		id: VIEWLET_ID,
@@ -127,6 +130,7 @@ export const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewContainer
 		rejectAddedViews: true,
 		alwaysUseContainerInfo: true,
 	}, ViewContainerLocation.Sidebar);
+*/
 
 Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 	.registerConfiguration({

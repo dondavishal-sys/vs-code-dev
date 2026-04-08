@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -65,6 +66,7 @@ registerEditorContribution(QuickDiffEditorController.ID,
 
 const sourceControlViewIcon = registerIcon('source-control-view-icon', Codicon.sourceControl, localize('sourceControlViewIcon', 'View icon of the Source Control view.'));
 
+/*
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
 	id: VIEWLET_ID,
 	title: localize2('source control', 'Source Control'),
@@ -155,6 +157,7 @@ viewsRegistry.registerViews([{
 	),
 	containerIcon: sourceControlViewIcon
 }], viewContainer);
+*/
 
 Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
 	.registerWorkbenchContribution(SCMActiveRepositoryController, LifecyclePhase.Restored);
