@@ -21,11 +21,15 @@ WORKDIR /vscode
 # Copy entire source
 COPY . .
 
-# Install root dependencies without postinstall (it tries to install test dirs we don't need)
+# Initialize a git repo (needed by some build scripts)
+RUN git init
+
+# Install root dependencies without postinstall
 RUN npm install --ignore-scripts
 
-# Manually install only the subdirectories needed for the server
-RUN cd build && npm install --ignore-scripts
+# Install subdirectories needed for compilation and server runtime
+RUN cd build && npm install
+RUN cd extensions && npm install
 RUN cd remote && npm install
 RUN cd remote/web && npm install
 
