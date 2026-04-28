@@ -18,11 +18,16 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /vscode
 
-# Copy entire source (postinstall needs .npmrc files in build/, remote/, extensions/*)
+# Copy entire source
 COPY . .
 
-# Install all dependencies (root + subdirectories via postinstall)
-RUN npm install
+# Install root dependencies without postinstall (it tries to install test dirs we don't need)
+RUN npm install --ignore-scripts
+
+# Manually install only the subdirectories needed for the server
+RUN cd build && npm install --ignore-scripts
+RUN cd remote && npm install
+RUN cd remote/web && npm install
 
 # Compile the project
 RUN npm run compile
