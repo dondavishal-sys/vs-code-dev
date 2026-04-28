@@ -3,7 +3,7 @@
 # ============================================
 FROM node:22-bookworm AS builder
 
-# Install build dependencies
+# Install all build dependencies needed by native modules
 RUN apt-get update && apt-get install -y \
     build-essential \
     g++ \
@@ -18,30 +18,25 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /vscode
 
-# Copy entire source
+# Copy full source
 COPY . .
 
-# Initialize a git repo (needed by some build scripts)
-RUN git init
+# Postinstall needs a git repo (runs git config at the end)
+RUN git init && git add -A && git commit -m "docker build" --allow-empty
 
-# Install root dependencies without postinstall
-RUN npm install --ignore-scripts
+# Let VS Code's own build system handle everything:
+# - Installs root deps
+# - Runs postinstall.ts which installs build/, remote/, extensions/*, test/* etc.
+RUN npm install
 
-# Install subdirectories needed for compilation and server runtime
-RUN cd build && npm install
-RUN cd extensions && npm install
-RUN cd remote && npm install
-RUN cd remote/web && npm install
-
-# Compile the project
+# Compile TypeScript and extension media
 RUN npm run compile
 
 # ============================================
-# Stage 2: Production Runtime
+# Stage 2: Production Runtime (slim)
 # ============================================
 FROM node:22-bookworm-slim
 
-# Install only runtime dependencies
 RUN apt-get update && apt-get install -y \
     libsecret-1-0 \
     libkrb5-3 \
@@ -50,7 +45,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /vscode
 
-# Copy compiled output and necessary files from builder
+# Copy only what the server needs to run
 COPY --from=builder /vscode/out ./out
 COPY --from=builder /vscode/remote ./remote
 COPY --from=builder /vscode/extensions ./extensions
@@ -60,8 +55,6 @@ COPY --from=builder /vscode/product.json ./
 COPY --from=builder /vscode/resources ./resources
 COPY --from=builder /vscode/.build ./.build
 
-# Expose the port Render will use
 EXPOSE 8080
 
-# Start the VS Code server
 CMD ["node", "out/server-main.js", "--port", "8080", "--host", "0.0.0.0", "--without-connection-token"]

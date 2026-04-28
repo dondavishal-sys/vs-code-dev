@@ -1,10 +1,2 @@
-.git
-test
-.devcontainer
-.github
-.vscode
-*.md
-*.txt
-*.log
-cli
 node_modules
+.git
