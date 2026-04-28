@@ -1,0 +1,11 @@
+node_modules
+.git
+.build
+test
+.devcontainer
+.github
+.vscode
+*.md
+*.txt
+*.log
+cli
