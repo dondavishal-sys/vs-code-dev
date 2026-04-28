@@ -18,24 +18,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /vscode
 
-# Copy package files first for better Docker layer caching
-COPY package.json package-lock.json .npmrc .nvmrc ./
-COPY build/npm/ ./build/npm/
-
-# Install root dependencies
-RUN npm install --ignore-scripts
-RUN node build/npm/postinstall.ts
-
-# Copy source code
+# Copy entire source (postinstall needs .npmrc files in build/, remote/, extensions/*)
 COPY . .
+
+# Install all dependencies (root + subdirectories via postinstall)
+RUN npm install
 
 # Compile the project
 RUN npm run compile
-
-# Install remote dependencies (needed for server runtime)
-WORKDIR /vscode/remote
-RUN npm install
-WORKDIR /vscode
 
 # ============================================
 # Stage 2: Production Runtime
@@ -65,6 +55,4 @@ COPY --from=builder /vscode/.build ./.build
 EXPOSE 8080
 
 # Start the VS Code server
-# --without-connection-token: no auth token (we handle auth at the LMS level)
-# --host 0.0.0.0: listen on all interfaces (required for Docker/Render)
 CMD ["node", "out/server-main.js", "--port", "8080", "--host", "0.0.0.0", "--without-connection-token"]

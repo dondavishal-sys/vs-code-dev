@@ -1,6 +1,4 @@
-node_modules
 .git
-.build
 test
 .devcontainer
 .github
@@ -9,3 +7,4 @@ test
 *.txt
 *.log
 cli
+node_modules
