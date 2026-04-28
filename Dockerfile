@@ -22,7 +22,7 @@ WORKDIR /vscode
 COPY . .
 
 # Postinstall needs a git repo (runs git config at the end)
-RUN git init && git add -A && git commit -m "docker build" --allow-empty
+RUN git init && git config user.email "build@docker" && git config user.name "build" && git add -A && git commit -m "docker build"
 
 # Let VS Code's own build system handle everything:
 # - Installs root deps
