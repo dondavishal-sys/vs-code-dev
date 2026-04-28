@@ -29,8 +29,11 @@ RUN git init && git config user.email "build@docker" && git config user.name "bu
 # - Runs postinstall.ts which installs build/, remote/, extensions/*, test/* etc.
 RUN npm install
 
-# Compile TypeScript and extension media
+# Compile TypeScript (server + core)
 RUN npm run compile
+
+# Compile web workbench assets (generates nls.messages.js, workbench bundles etc.)
+RUN npm run compile-web
 
 # ============================================
 # Stage 2: Production Runtime (slim)
