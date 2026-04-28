@@ -1,14 +1,14 @@
-# ============================================
-# Stage 1: Build VS Code Server
-# ============================================
-FROM node:22-bookworm AS builder
+# Single-stage build: VS Code needs many interdependent files at runtime
+FROM node:22-bookworm
 
-# Install all build dependencies needed by native modules
+# Install build + runtime dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     g++ \
     libsecret-1-dev \
+    libsecret-1-0 \
     libkrb5-dev \
+    libkrb5-3 \
     python3 \
     pkg-config \
     libx11-dev \
@@ -21,43 +21,19 @@ WORKDIR /vscode
 # Copy full source
 COPY . .
 
-# Postinstall needs a git repo (runs git config at the end)
+# Postinstall needs a git repo
 RUN git init && git config user.email "build@docker" && git config user.name "build" && git add -A && git commit -m "docker build"
 
-# Let VS Code's own build system handle everything:
-# - Installs root deps
-# - Runs postinstall.ts which installs build/, remote/, extensions/*, test/* etc.
+# Full install with postinstall
 RUN npm install
 
-# Compile TypeScript (server + core)
+# Compile server + client
 RUN npm run compile
 
-# Compile web workbench assets (generates nls.messages.js, workbench bundles etc.)
-RUN npm run compile-web
-
-# ============================================
-# Stage 2: Production Runtime (slim)
-# ============================================
-FROM node:22-bookworm-slim
-
-RUN apt-get update && apt-get install -y \
-    libsecret-1-0 \
-    libkrb5-3 \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /vscode
-
-# Copy only what the server needs to run
-COPY --from=builder /vscode/out ./out
-COPY --from=builder /vscode/remote ./remote
-COPY --from=builder /vscode/extensions ./extensions
-COPY --from=builder /vscode/node_modules ./node_modules
-COPY --from=builder /vscode/package.json ./
-COPY --from=builder /vscode/product.json ./
-COPY --from=builder /vscode/resources ./resources
-COPY --from=builder /vscode/.build ./.build
-
 EXPOSE 8080
+
+# Run in dev mode (same as ./scripts/code-server.sh does locally)
+ENV NODE_ENV=development
+ENV VSCODE_DEV=1
 
 CMD ["node", "out/server-main.js", "--port", "8080", "--host", "0.0.0.0", "--without-connection-token"]
