@@ -152,6 +152,17 @@ export class WebClientServer {
 	private async _handleStatic(req: http.IncomingMessage, res: http.ServerResponse, resourcePath: string): Promise<void> {
 		const headers: Record<string, string> = Object.create(null);
 
+		// Allow cross-origin loading from LMS
+		headers['Access-Control-Allow-Origin'] = '*';
+		headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
+		headers['Access-Control-Allow-Headers'] = 'Content-Type';
+
+		// Handle preflight
+		if (req.method === 'OPTIONS') {
+			res.writeHead(204, headers);
+			return void res.end();
+		}
+
 		// Strip the this._staticRoute from the path
 		const normalizedPathname = decodeURIComponent(resourcePath); // support paths that are uri-encoded (e.g. spaces => %20)
 
@@ -435,7 +446,8 @@ export class WebClientServer {
 
 		const headers: http.OutgoingHttpHeaders = {
 			'Content-Type': 'text/html',
-			'Content-Security-Policy': cspDirectives
+			'Content-Security-Policy': cspDirectives,
+			'Access-Control-Allow-Origin': '*'
 		};
 		if (this._connectionToken.type !== ServerConnectionTokenType.None) {
 			// At this point we know the client has a valid cookie
